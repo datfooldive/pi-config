@@ -188,6 +188,7 @@ You can execute slash commands yourself using the `execute_command` tool:
 | `scout` | Fast codebase reconnaissance | Sonnet 4.6 |
 | `worker` | Implements tasks from todos, makes polished commits (always using the `commit` skill), and closes the todo | Opus 4.6 |
 | `reviewer` | Reviews code for quality/security | Codex 5.3 |
+| `auditor` | Deep codebase audit — security, architecture, dependencies, operational risk | Codex 5.3 |
 | `researcher` | Deep research using parallel.ai tools (web search, extraction, synthesis) + Claude Code for code analysis | Opus 4.6 |
 | `planner` | Interactive brainstorming and planning — clarifies requirements, explores approaches, writes plans, creates todos | Opus 4.6 (medium thinking) |
 
@@ -230,7 +231,7 @@ subagent({ name: "Iterate", interactive: true, fork: true, task: "Fix the bug wh
 subagent({ name: "Worker", agent: "worker", model: "anthropic/claude-opus-4-6", task: "Quick fix..." })
 
 // Parallel subagents — run multiple agents concurrently with tiled layout
-parallel_subagents({
+agent_group({
   agents: [
     { name: "Scout: Auth", agent: "scout", task: "Analyze auth module" },
     { name: "Scout: DB", agent: "scout", task: "Map database schema" },
@@ -238,7 +239,9 @@ parallel_subagents({
 })
 ```
 
-**Parallel execution:** Use `parallel_subagents` to run multiple autonomous agents concurrently. Each gets its own cmux terminal in a tiled layout (first splits right, subsequent stack vertically). Progress updates stream in as each agent finishes — no waiting for all to complete.
+**Parallel execution:** Use `agent_group` to run multiple autonomous agents concurrently. It launches the whole batch at once and collects one grouped result when the batch finishes. Set `wait: true` if you want the tool call itself to block until all results are ready. Agents inside a group can use `subagent` for one level of nesting.
+
+**Supervision from the outer session:** Use `active_subagents` to inspect what is still running, and `message_subagent` to send nudges or course-corrections into a live subagent. These control tools are meant for the main/orchestrator session, not for subagents to use on each other.
 
 Subagents are full pi sessions — all extensions and skills auto-discover. A subagent can spawn another subagent (e.g., planner spawns a scout). Agent `.md` files in `~/.pi/agent/agents/` define model, tools, skills, thinking level.
 

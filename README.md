@@ -56,6 +56,7 @@ Specialized roles with baked-in identity, workflow, and review rubrics.
 | **reviewer** | Codex 5.3 | Reviews code for quality, security, correctness (review rubric baked in) |
 | **researcher** | Opus 4.6 | Deep research using parallel.ai tools + Claude Code for code analysis |
 | **visual-tester** | Opus 4.6 | Visual QA — navigates web UIs via Chrome CDP, spots issues, produces reports |
+| **auditor** | Codex 5.3 | Deep codebase audit — security, architecture, dependencies, operational risk |
 | **autoresearch** | GPT-5.4 | Autonomous experiment loop — runs, measures, and optimizes iteratively |
 
 ## Skills
@@ -97,6 +98,9 @@ Loaded on-demand when the context matches.
 | `/plan <description>` | Start a planning session — spawns planner subagent, then orchestrates execution |
 | `/subagent <agent> <task>` | Spawn a subagent (e.g., `/subagent scout analyze the auth module`) |
 | `/iterate [task]` | Fork session into interactive subagent for quick fixes |
+| `agent_group(...)` | Launch a batch of subagents and collect one grouped result |
+| `active_subagents(...)` | Inspect running subagents from the main session |
+| `message_subagent(...)` | Send a nudge/follow-up into a running subagent |
 | `/switch` | Switch sessions while optionally keeping current one running in background |
 | `/bg [list\|kill\|attach\|logs\|clear]` | Manage background sessions |
 | `/answer` | Extract questions into interactive Q&A |
