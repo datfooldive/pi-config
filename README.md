@@ -51,12 +51,12 @@ Specialized roles with baked-in identity, workflow, and review rubrics.
 | Agent | Model | Purpose |
 |-------|-------|---------|
 | **planner** | Opus 4.6 | Interactive brainstorming — clarify, explore, validate design, write plan, create todos |
-| **scout** | Haiku 4.5 | Fast codebase reconnaissance — gathers context without making changes |
-| **worker** | Sonnet 4.6 | Implements tasks from todos, commits with polished messages |
-| **reviewer** | Opus 4.6 | Reviews code for quality, security, correctness (review rubric baked in) |
-| **researcher** | Sonnet 4.6 | Deep research using parallel.ai tools + Claude Code for code analysis |
-| **visual-tester** | Sonnet 4.6 | Visual QA — navigates web UIs via Chrome CDP, spots issues, produces reports |
-| **autoresearch** | Opus 4.6 | Autonomous experiment loop — runs, measures, and optimizes iteratively |
+| **scout** | Sonnet 4.6 | Fast codebase reconnaissance — gathers context without making changes |
+| **worker** | Opus 4.6 | Implements tasks from todos, commits with polished messages |
+| **reviewer** | Codex 5.3 | Reviews code for quality, security, correctness (review rubric baked in) |
+| **researcher** | Opus 4.6 | Deep research using parallel.ai tools + Claude Code for code analysis |
+| **visual-tester** | Opus 4.6 | Visual QA — navigates web UIs via Chrome CDP, spots issues, produces reports |
+| **autoresearch** | GPT-5.4 | Autonomous experiment loop — runs, measures, and optimizes iteratively |
 
 ## Skills
 

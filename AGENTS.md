@@ -185,10 +185,10 @@ You can execute slash commands yourself using the `execute_command` tool:
 
 | Agent | Purpose | Model |
 |-------|---------|-------|
-| `scout` | Fast codebase reconnaissance | Haiku (fast, cheap) |
-| `worker` | Implements tasks from todos, makes polished commits (always using the `commit` skill), and closes the todo | Sonnet 4.6 |
+| `scout` | Fast codebase reconnaissance | Sonnet 4.6 |
+| `worker` | Implements tasks from todos, makes polished commits (always using the `commit` skill), and closes the todo | Opus 4.6 |
 | `reviewer` | Reviews code for quality/security | Codex 5.3 |
-| `researcher` | Deep research using parallel.ai tools (web search, extraction, synthesis) + Claude Code for code analysis | Sonnet 4.6 |
+| `researcher` | Deep research using parallel.ai tools (web search, extraction, synthesis) + Claude Code for code analysis | Opus 4.6 |
 | `planner` | Interactive brainstorming and planning — clarifies requirements, explores approaches, writes plans, creates todos | Opus 4.6 (medium thinking) |
 
 #### Orchestration Mindset
@@ -227,7 +227,7 @@ subagent({
 subagent({ name: "Iterate", interactive: true, fork: true, task: "Fix the bug where..." })
 
 // Override agent defaults when needed
-subagent({ name: "Worker", agent: "worker", model: "anthropic/claude-haiku-4-5", task: "Quick fix..." })
+subagent({ name: "Worker", agent: "worker", model: "anthropic/claude-opus-4-6", task: "Quick fix..." })
 
 // Parallel subagents — run multiple agents concurrently with tiled layout
 parallel_subagents({
