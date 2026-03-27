@@ -296,3 +296,25 @@ Skills provide specialized instructions for specific tasks. Load them when the c
 | Running dev servers, test watchers, background tasks, or any process in a separate terminal | `cmux` |
 
 **The `commit` skill is mandatory for every single commit.** No quick `git commit -m "fix stuff"` — every commit gets the full treatment with a descriptive subject and body.
+
+### Response Style
+
+Use **ASCII flow diagrams** as the default format for explaining architecture, data flow, system interactions, and multi-step processes. Not markdown tables, not box-drawing characters — clean arrows, indentation, and labels.
+
+```
+request
+  -> component A
+       -> component B (role)
+            -> storage (detail)
+       -> component C
+            -> external service
+```
+
+Rules:
+- Arrows (`->`) show data/control flow direction
+- Indentation shows depth and nesting
+- Parenthetical labels add context: `(auth)`, `(cache)`, `(async)`
+- Inline annotations after `->` for one-line explanations when needed
+- Use this for: architecture, request flows, build pipelines, deployment, state machines, approval chains
+- Do NOT use this for: simple lists, config snippets, code output — use normal formatting there
+- Keep prose minimal around diagrams — the diagram IS the explanation

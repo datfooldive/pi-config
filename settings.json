@@ -1,8 +1,8 @@
 {
   "lastChangelogVersion": "0.63.1",
   "defaultProvider": "openai-codex",
-  "defaultModel": "gpt-5.4-mini",
-  "defaultThinkingLevel": "medium",
+  "defaultModel": "gpt-5.4",
+  "defaultThinkingLevel": "high",
   "packages": [
     "git:github.com/nicobailon/pi-mcp-adapter",
     {
@@ -34,7 +34,8 @@
     {
       "source": "npm:oh-pi",
       "extensions": [
-        "-extensions/safe-guard.ts"
+        "-extensions/safe-guard.ts",
+        "-pi-package/extensions/bg-process.ts"
       ],
       "prompts": [
         "-pi-package/prompts/review.md"
@@ -46,7 +47,10 @@
     "../../hub/pi-interactive-subagents",
     "npm:pi-teams",
     "npm:@codexstar/pi-listen",
-    "git:github.com/umgbhalla/pi-openai-compaction"
+    "git:github.com/umgbhalla/pi-openai-compaction",
+    "npm:pi-tool-display",
+    "npm:pi-context",
+    "npm:pi-updater"
   ],
   "hideThinkingBlock": false,
   "extensions": [
@@ -70,7 +74,7 @@
   "steeringMode": "all",
   "followUpMode": "all",
   "treeFilterMode": "default",
-  "theme": "catppuccin-mocha",
+  "theme": "oh-p-dark",
   "voice": {
     "version": 2,
     "enabled": true,
