@@ -1,7 +1,7 @@
 {
-  "lastChangelogVersion": "0.62.0",
-  "defaultProvider": "anthropic",
-  "defaultModel": "claude-opus-4-6",
+  "lastChangelogVersion": "0.63.1",
+  "defaultProvider": "openai-codex",
+  "defaultModel": "gpt-5.4",
   "defaultThinkingLevel": "medium",
   "packages": [
     "git:github.com/nicobailon/pi-mcp-adapter",
@@ -21,7 +21,6 @@
     "git:github.com/HazAT/glimpse",
     "git:github.com/HazAT/pi-autoresearch",
     "npm:pi-per-model-prompt",
-    "npm:@jordyvd/pi-openai-compaction",
     "npm:@arpagon/pi-web-providers",
     "npm:@hyperprior/pi-ask",
     "npm:@hyperprior/pi-ssh",
@@ -46,7 +45,8 @@
     "../../hub/zonko/pi-gigaplan",
     "../../hub/pi-interactive-subagents",
     "npm:pi-teams",
-    "npm:@codexstar/pi-listen"
+    "npm:@codexstar/pi-listen",
+    "git:github.com/umgbhalla/pi-openai-compaction"
   ],
   "hideThinkingBlock": false,
   "extensions": [
