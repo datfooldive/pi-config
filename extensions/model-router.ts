@@ -4,7 +4,7 @@ import { Type } from "@sinclair/typebox";
 
 type ThinkingLevel = "off" | "minimal" | "low" | "medium" | "high" | "xhigh";
 
-type RouteKey = "hard_reasoning" | "fast_code" | "frontend_design";
+type RouteKey = "hard_reasoning" | "fast_code" | "smart_small_refactor" | "frontend_design";
 
 type RouteTarget = {
 	provider: string;
@@ -25,21 +25,47 @@ const DEFAULT_ROUTES: Record<RouteKey, RouteTarget> = {
 		provider: "openai-codex",
 		modelId: "gpt-5.4",
 		thinkingLevel: "high",
-		reason: "Best for hard reasoning, debugging, architecture, and thorny implementation work.",
+		reason: "Best for hardest reasoning, deep debugging, architecture, and long multi-step coding tasks.",
 	},
 	fast_code: {
 		provider: "openai-codex",
 		modelId: "gpt-5.3-codex-spark",
 		thinkingLevel: "low",
-		reason: "Best for fast, cheap coding passes, quick edits, and compaction-friendly iteration.",
+		reason: "Ultra-fast real-time coding (text-only, 128k context) for quick edits and tight feedback loops.",
+	},
+	smart_small_refactor: {
+		provider: "openai-codex",
+		modelId: "gpt-5.4-mini",
+		thinkingLevel: "medium",
+		reason: "Strong quality/latency tradeoff for smart small refactors, targeted cleanups, and short review loops.",
 	},
 	frontend_design: {
 		provider: "anthropic",
-		modelId: "claude-opus-4-5",
+		modelId: "claude-opus-4-6",
 		thinkingLevel: "medium",
-		reason: "Best for frontend design, UX exploration, polished copy, and creative ideation.",
+		reason: "Highest-quality model for complex UI/design direction, deep UX reasoning, and large-context frontend work.",
 	},
 };
+
+const ROUTE_EXAMPLES: Record<RouteKey, string> = {
+	hard_reasoning:
+		"Investigate a race condition in a distributed worker system, find root cause, and propose an architecture-safe fix.",
+	fast_code:
+		"Quickly patch a failing parser branch, adjust two tests, and keep the turnaround very fast.",
+	smart_small_refactor:
+		"Refactor one service method for clarity without changing behavior, tighten names, and remove duplication in-place.",
+	frontend_design:
+		"Design a polished landing page UX with clear hierarchy, motion, and conversion-focused copy.",
+};
+
+const MODEL_NOTES = [
+	"GPT-5.4: strongest for difficult reasoning-heavy coding.",
+	"GPT-5.4-mini: faster/cheaper while keeping strong coding quality for smaller tasks.",
+	"GPT-5.3-Codex-Spark: best for near-instant coding iteration (text-only, 128k context).",
+	"Claude Opus 4.6: top-end quality for deep coding, design direction, and long-context tasks.",
+	"Claude Sonnet 4.6: best speed/intelligence balance for everyday high-quality coding and review.",
+	"Claude Haiku 4.5: fastest Claude tier with strong capability for lightweight coding/refactor loops.",
+];
 
 function currentModelText(ctx: ExtensionContext) {
 	const model = ctx.model;
@@ -92,7 +118,6 @@ function detectRoute(prompt: string): { route: RouteKey; confidence: "high" | "m
 		"analyze",
 		"investigate",
 		"tradeoff",
-		"refactor",
 		"migration",
 		"performance",
 		"optimizer",
@@ -117,6 +142,20 @@ function detectRoute(prompt: string): { route: RouteKey; confidence: "high" | "m
 		"summarize",
 		"boil down",
 	];
+	const smartSmallRefactor = [
+		"small refactor",
+		"smart refactor",
+		"surgical refactor",
+		"minimal refactor",
+		"no behavior change",
+		"clean up this function",
+		"improve readability",
+		"tight refactor",
+		"light refactor",
+		"small cleanup",
+		"targeted cleanup",
+		"simplify this file",
+	];
 	const frontendDesign = [
 		"frontend",
 		"design",
@@ -139,14 +178,17 @@ function detectRoute(prompt: string): { route: RouteKey; confidence: "high" | "m
 	const match = (phrases: string[]) => phrases.filter((phrase) => text.includes(phrase));
 	const hardMatches = match(hardReasoning);
 	const fastMatches = match(fastCode);
+	const smartRefactorMatches = match(smartSmallRefactor);
 	const frontendMatches = match(frontendDesign);
 
 	if (hardMatches.length >= 2) return { route: "hard_reasoning", confidence: "high", matched: hardMatches };
 	if (frontendMatches.length >= 2) return { route: "frontend_design", confidence: "high", matched: frontendMatches };
+	if (smartRefactorMatches.length >= 2) return { route: "smart_small_refactor", confidence: "high", matched: smartRefactorMatches };
 	if (fastMatches.length >= 2) return { route: "fast_code", confidence: "high", matched: fastMatches };
 
 	if (hardMatches.length === 1) return { route: "hard_reasoning", confidence: "medium", matched: hardMatches };
 	if (frontendMatches.length === 1) return { route: "frontend_design", confidence: "medium", matched: frontendMatches };
+	if (smartRefactorMatches.length === 1) return { route: "smart_small_refactor", confidence: "medium", matched: smartRefactorMatches };
 	if (fastMatches.length === 1) return { route: "fast_code", confidence: "medium", matched: fastMatches };
 
 	return undefined;
@@ -242,6 +284,7 @@ export default function modelRouterExtension(pi: ExtensionAPI) {
 				`autoRouting: ${state.autoRoutingEnabled ? "enabled" : "disabled"}`,
 				`hard_reasoning -> ${DEFAULT_ROUTES.hard_reasoning.provider}/${DEFAULT_ROUTES.hard_reasoning.modelId}`,
 				`fast_code -> ${DEFAULT_ROUTES.fast_code.provider}/${DEFAULT_ROUTES.fast_code.modelId}`,
+				`smart_small_refactor -> ${DEFAULT_ROUTES.smart_small_refactor.provider}/${DEFAULT_ROUTES.smart_small_refactor.modelId}`,
 				`frontend_design -> ${DEFAULT_ROUTES.frontend_design.provider}/${DEFAULT_ROUTES.frontend_design.modelId}`,
 			];
 			ctx.ui.notify(lines.join("\n"), "info");
@@ -288,7 +331,18 @@ export default function modelRouterExtension(pi: ExtensionAPI) {
 				`Route presets:`,
 				`- hard_reasoning -> ${DEFAULT_ROUTES.hard_reasoning.provider}/${DEFAULT_ROUTES.hard_reasoning.modelId}`,
 				`- fast_code -> ${DEFAULT_ROUTES.fast_code.provider}/${DEFAULT_ROUTES.fast_code.modelId}`,
+				`- smart_small_refactor -> ${DEFAULT_ROUTES.smart_small_refactor.provider}/${DEFAULT_ROUTES.smart_small_refactor.modelId}`,
 				`- frontend_design -> ${DEFAULT_ROUTES.frontend_design.provider}/${DEFAULT_ROUTES.frontend_design.modelId}`,
+				`Sensible alternatives:`,
+				`- smart_small_refactor alt -> anthropic/claude-haiku-4-5`,
+				`- balanced coding + reviews -> anthropic/claude-sonnet-4-6`,
+				`Example tasks:`,
+				`- hard_reasoning: ${ROUTE_EXAMPLES.hard_reasoning}`,
+				`- fast_code: ${ROUTE_EXAMPLES.fast_code}`,
+				`- smart_small_refactor: ${ROUTE_EXAMPLES.smart_small_refactor}`,
+				`- frontend_design: ${ROUTE_EXAMPLES.frontend_design}`,
+				`Model notes:`,
+				...MODEL_NOTES.map((note) => `- ${note}`),
 			].join("\n");
 
 			return {
@@ -310,24 +364,34 @@ export default function modelRouterExtension(pi: ExtensionAPI) {
 	pi.registerTool({
 		name: "list_available_models",
 		label: "List Available Models",
-		description: "List pi models that are currently available with configured auth, including capabilities and exact switch params.",
+		description: "List pi models with filtering. By default, returns only models with valid auth configured.",
 		promptSnippet: "Inspect available models and their provider/modelId pairs before switching.",
 		promptGuidelines: [
 			"Use this tool before switching models if you are unsure which provider/modelId is available.",
+			"By default this returns auth-validated models only (authOnly=true).",
 		],
 		parameters: Type.Object({
 			limit: Type.Optional(Type.Number({ minimum: 1, maximum: 200, description: "Maximum number of models to return" })),
+			provider: Type.Optional(Type.String({ description: "Optional provider filter, e.g. openai-codex or anthropic" })),
+			authOnly: Type.Optional(Type.Boolean({ description: "Default true. If false, include models even without valid auth." })),
 		}),
 		async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
-			const available = await ctx.modelRegistry.getAvailable();
-			const sorted = [...available].sort((a: any, b: any) => `${a.provider}/${a.id}`.localeCompare(`${b.provider}/${b.id}`));
+			const authOnly = params.authOnly ?? true;
+			const providerFilter = (params.provider || "").trim();
+			const sourceModels = authOnly ? await ctx.modelRegistry.getAvailable() : ctx.modelRegistry.getAll();
+			const filtered = providerFilter
+				? sourceModels.filter((model: any) => model.provider === providerFilter)
+				: sourceModels;
+			const sorted = [...filtered].sort((a: any, b: any) => `${a.provider}/${a.id}`.localeCompare(`${b.provider}/${b.id}`));
 			const limit = params.limit ?? 100;
 			const sliced = sorted.slice(0, limit);
 			const lines = sliced.map((model: any) => `${formatModel(model)}\nexample switch params:\n${exampleSwitchParams(model)}`);
 			return {
-				content: [{ type: "text", text: lines.join("\n\n") || "No available models found." }],
+				content: [{ type: "text", text: lines.join("\n\n") || "No models found for this filter." }],
 				details: {
-					count: available.length,
+					authOnly,
+					provider: providerFilter || undefined,
+					totalMatching: filtered.length,
 					models: sliced.map((model: any) => ({
 						provider: model.provider,
 						id: model.id,
@@ -358,7 +422,7 @@ export default function modelRouterExtension(pi: ExtensionAPI) {
 		],
 		parameters: Type.Object({
 			provider: Type.String({ description: "Model provider, e.g. anthropic or openai-codex" }),
-			modelId: Type.String({ description: "Exact model id, e.g. claude-opus-4-5 or gpt-5.4-codex" }),
+			modelId: Type.String({ description: "Exact model id, e.g. claude-opus-4-6 or gpt-5.4" }),
 			thinkingLevel: Type.Optional(
 				StringEnum(THINKING_LEVELS, {
 					description: "Optional thinking level to apply after switching",
@@ -383,7 +447,7 @@ export default function modelRouterExtension(pi: ExtensionAPI) {
 		name: "recommend_model_for_task",
 		label: "Recommend Model For Task",
 		description: "Recommend a model route for a task and optionally switch to it.",
-		promptSnippet: "Choose a model route for hard reasoning, fast coding, or frontend/design tasks.",
+		promptSnippet: "Choose a model route for hard reasoning, fast coding, smart small refactors, or frontend/design tasks.",
 		promptGuidelines: [
 			"Use this tool when task complexity suggests switching models before continuing.",
 		],
