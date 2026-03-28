@@ -70,7 +70,7 @@ When entering an unfamiliar project, check for these files. Their conventions ov
 
 ### Prefer Better Tools
 
-Use `rg` (ripgrep) instead of `grep` for searching files — it's faster, respects `.gitignore`, and has saner defaults.
+- Use `rg` (ripgrep) and `fd` instead of `grep` and `find` — they are faster, respect `.gitignore`, and have saner defaults.
 
 ### Read Before You Edit
 
@@ -177,107 +177,30 @@ You can execute slash commands yourself using the `execute_command` tool:
 - **Run `/answer`** after asking multiple questions — don't make the user invoke it
 - **Send follow-up prompts** to yourself
 
-### Delegate to Subagents
+### Team Orchestration
 
-**Prefer subagent delegation** for any task that involves multiple steps or could benefit from specialized focus.
+Pi supports multi-agent orchestration for complex or parallel tasks. You act as the **Leader**, capable of spawning and coordinating **Teammates** who share a unified **Task list** and communicate via a **Mailbox**.
 
-#### Available Agents
+**Programmatic Orchestration:**
+- Use the **`teams` tool** to autonomously delegate work, assign dependencies, monitor teammate activity, and manage the team lifecycle without user intervention.
 
-| Agent | Purpose | Model |
-|-------|---------|-------|
-| `scout` | Fast codebase reconnaissance | Sonnet 4.6 |
-| `worker` | Implements tasks from todos, makes polished commits (always using the `commit` skill), and closes the todo | Opus 4.6 |
-| `reviewer` | Reviews code for quality/security | Codex 5.3 |
-| `auditor` | Deep codebase audit — security, architecture, dependencies, operational risk | Codex 5.3 |
-| `researcher` | Deep research using parallel.ai tools (web search, extraction, synthesis) + Claude Code for code analysis | Opus 4.6 |
-| `planner` | Interactive brainstorming and planning — clarifies requirements, explores approaches, writes plans, creates todos | Opus 4.6 (medium thinking) |
-
-#### Orchestration Mindset
-
-Subagents are **specialists in a system**. Each agent exists for a specific purpose — scouting, implementing, reviewing, researching, planning. When you spawn a subagent, it should:
-
-- **Focus on what's asked** — do the task, do it well, move on
-- **Not expand scope** — a scout doesn't implement, a worker doesn't redesign, a reviewer doesn't rewrite
-- **Trust the system** — other agents handle what's outside your role
-- **Deliver and exit** — produce your artifact/commit/review, then terminate cleanly
-
-This isn't a rigid hierarchy — it's a team of specialists. Each agent leans hard into its strengths and trusts that the orchestrator (the main session or the user) will route the right work to the right agent.
-
-#### Subagents
-
-Subagents spawn visible pi sessions in cmux terminals. The user can watch progress in real-time and optionally interact. Autonomous agents call `subagent_done` to self-terminate.
-
-The `agent` parameter loads defaults from `~/.pi/agent/agents/<name>.md`. Model, tools, skills, thinking — all inherited. Explicit params override agent defaults.
-
-```typescript
-// Use existing agent definitions — full transparency
-subagent({ name: "Scout", agent: "scout", interactive: false, task: "Analyze the codebase..." })
-subagent({ name: "Worker", agent: "worker", interactive: false, task: "Implement TODO-xxxx..." })
-subagent({ name: "Reviewer", agent: "reviewer", interactive: false, task: "Review recent changes..." })
-subagent({ name: "Researcher", agent: "researcher", interactive: false, task: "Research [topic]..." })
-
-// Planner — interactive, loads config from ~/.pi/agent/agents/planner.md
-subagent({
-  name: "Planner",
-  agent: "planner",
-  interactive: true,
-  task: "Plan: [description]. Context: [relevant info]"
-})
-
-// Iterate — fork the session for focused work, full context preserved
-subagent({ name: "Iterate", interactive: true, fork: true, task: "Fix the bug where..." })
-
-// Override agent defaults when needed
-subagent({ name: "Worker", agent: "worker", model: "anthropic/claude-opus-4-6", task: "Quick fix..." })
-
-// Parallel subagents — run multiple agents concurrently with tiled layout
-agent_group({
-  agents: [
-    { name: "Scout: Auth", agent: "scout", task: "Analyze auth module" },
-    { name: "Scout: DB", agent: "scout", task: "Map database schema" },
-  ]
-})
-```
-
-**Parallel execution:** Use `agent_group` to run multiple autonomous agents concurrently. It launches the whole batch at once and collects one grouped result when the batch finishes. Set `wait: true` if you want the tool call itself to block until all results are ready. Agents inside a group can use `subagent` for one level of nesting.
-
-**Supervision from the outer session:** Use `active_subagents` to inspect what is still running, and `message_subagent` to send nudges or course-corrections into a live subagent. These control tools are meant for the main/orchestrator session, not for subagents to use on each other.
-
-Subagents are full pi sessions — all extensions and skills auto-discover. A subagent can spawn another subagent (e.g., planner spawns a scout). Agent `.md` files in `~/.pi/agent/agents/` define model, tools, skills, thinking level.
-
-**Slash commands:**
-- `/plan <what to build>` — start the full planning workflow (investigate → planner → execute → review)
-- `/subagent <agent> <task>` — spawn a subagent by name (e.g., `/subagent scout analyze auth module`)
-- `/iterate [task]` — fork session into interactive subagent for quick fixes
-
-**Iterate pattern** — for quick fixes and ad-hoc work after a big implementation. The user branches off into a focused subagent, fixes a bug or makes a change, then comes back with just the summary. Keeps the main session's context clean.
-
-```typescript
-subagent({
-  name: "Iterate",
-  interactive: true,
-  fork: true,
-  task: "[describe the bug or change needed]"
-})
-```
-
-`fork: true` copies the current session — the sub-agent has full conversation context. All extensions and skills auto-discover (no `extensions` param = everything). Use when the user says "let me fix this real quick", "iterate on this", or when they want focused work without polluting the main session's context.
-
-#### When to Delegate
-
-- **Todos ready to execute** → Spawn `scout` then `worker` agents
-- **Code review needed** → Delegate to `reviewer`
-- **Need context first** → Start with `scout`
-- **Web research or external info needed** → Delegate to `researcher` (uses parallel.ai tools for web, Claude Code for code analysis)
-
-#### When NOT to Delegate
-
-- Quick fixes (< 2 minutes of work)
-- Simple questions
-- Single-file changes with obvious scope
-- When the user wants to stay hands-on
-
-**Default to delegation for anything substantial.**
+**Manual Orchestration (Slash Commands):**
+- **Spawning & Setup:**
+  - `/team spawn [name] [instructions]` — Spawn a new teammate.
+- **Task Management:**
+  - `/team task add <task>` — Add a task to the shared list.
+  - `/team task assign <id> [name]` — Assign a task to a specific teammate.
+  - `/team task status <id> <status>` — Update a task's status.
+- **Communication:**
+  - `/team dm <name> <message>` — Send a direct message to a teammate.
+  - `/team broadcast [--urgent] <message>` — Send a message to all active teammates.
+- **Governance:**
+  - `/team delegate on` — Restrict the leader to pure coordination (no direct file editing).
+  - `/team plan` — Require workers to get their execution plan approved before starting.
+- **Lifecycle & Cleanup:**
+  - `/team done` — Mark all team tasks as complete and end the team run.
+  - `/team kill <name>` — Terminate a specific teammate.
+  - `/team cleanup` — Forcefully shut down all teammates and clean up state.
 
 ### Skill Triggers
 
@@ -293,7 +216,7 @@ Skills provide specialized instructions for specific tasks. Load them when the c
 | Asked to simplify/clean up/refactor code | `code-simplifier` |
 | Reading, reviewing, or analyzing a pi session JSONL file | `session-reader` |
 | Adding or configuring an MCP server (global or project-local) | `add-mcp-server` |
-| Running dev servers, test watchers, background tasks, or any process in a separate terminal | `cmux` |
+| Orchestrating multi-agent teamwork, spawning workers, or delegating tasks | `agent-teams` |
 
 **The `commit` skill is mandatory for every single commit.** No quick `git commit -m "fix stuff"` — every commit gets the full treatment with a descriptive subject and body.
 

@@ -81,7 +81,7 @@ async function callJudge(
   pi: ExtensionAPI,
   summary: string,
   timeSinceActivityMs: number,
-  consecutiveInterventions: number
+  consecutiveInterventions: number,
 ): Promise<JudgeResult> {
   const defaultResult: JudgeResult = {
     action: "continue",
@@ -122,10 +122,10 @@ Respond ONLY with valid JSON, no other text, no markdown fences:
         "--no-session",
         "--no-tools",
         "--model",
-        "anthropic/claude-sonnet-4-6",
+        "google-gemini-cli/gemini-2.5-flash",
         judgePrompt,
       ],
-      { timeout: 30000 }
+      { timeout: 30000 },
     );
 
     if (result.code !== 0 || !result.stdout) return defaultResult;
@@ -206,8 +206,10 @@ export default function (pi: ExtensionAPI) {
         if (consecutiveInterventions >= maxInterventions) {
           await ctx.abort();
           pi.sendUserMessage(
-            "[Watchdog] Giving up after " + maxInterventions + " intervention attempts. The current operation was cancelled. Please review and decide how to proceed.",
-            { deliverAs: "followUp" }
+            "[Watchdog] Giving up after " +
+              maxInterventions +
+              " intervention attempts. The current operation was cancelled. Please review and decide how to proceed.",
+            { deliverAs: "followUp" },
           );
           enabled = false;
           updateStatusBar();
@@ -215,7 +217,12 @@ export default function (pi: ExtensionAPI) {
         }
 
         const summary = formatSessionSummary(ctx);
-        const judgment = await callJudge(pi, summary, timeSinceActivity, consecutiveInterventions);
+        const judgment = await callJudge(
+          pi,
+          summary,
+          timeSinceActivity,
+          consecutiveInterventions,
+        );
 
         if (judgment.action === "continue") {
           // No intervention needed — reset timestamp so we don't immediately re-trigger
@@ -223,8 +230,10 @@ export default function (pi: ExtensionAPI) {
         } else if (judgment.action === "nudge") {
           await ctx.abort();
           pi.sendUserMessage(
-            "[Watchdog] " + judgment.message + " The blocked operation was cancelled. Try a different approach.",
-            { deliverAs: "followUp" }
+            "[Watchdog] " +
+              judgment.message +
+              " The blocked operation was cancelled. Try a different approach.",
+            { deliverAs: "followUp" },
           );
           consecutiveInterventions++;
           lastActivityTimestamp = Date.now();
@@ -234,8 +243,10 @@ export default function (pi: ExtensionAPI) {
         } else if (judgment.action === "abort") {
           await ctx.abort();
           pi.sendUserMessage(
-            "[Watchdog] " + judgment.message + " Session stopped to avoid wasting resources.",
-            { deliverAs: "followUp" }
+            "[Watchdog] " +
+              judgment.message +
+              " Session stopped to avoid wasting resources.",
+            { deliverAs: "followUp" },
           );
           enabled = false;
           updateStatusBar();

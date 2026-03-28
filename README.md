@@ -33,31 +33,22 @@ cd ~/.pi/agent && git pull
 
 ## Architecture
 
-This config uses **subagents** — visible pi sessions spawned in cmux terminals. Each subagent is a full pi session with its own identity, tools, and skills. The user can watch agents work in real-time and interact when needed.
+This config uses **Agent Teams** — a system that brings Claude Code-style team orchestration to Pi. You (the leader) can spawn teammates, share a task list, and coordinate work across multiple parallel Pi sessions.
 
 ### Key Concepts
 
-- **Subagents** — visible cmux terminals running pi. Autonomous agents self-terminate via `subagent_done`. Interactive agents wait for the user.
-- **Agent definitions** (`agents/*.md`) — one source of truth for model, tools, skills, and identity per role.
-- **Plan workflow** — `/plan` spawns an interactive planner subagent, then orchestrates workers and reviewers.
-- **Iterate pattern** — `/iterate` forks the session into a subagent for quick fixes without polluting the main context.
+- **Teammates** — child Pi processes that poll for tasks, execute them, and report back. Teammates can clone the leader's session context (`branch`) and work in isolated git workspaces (`worktree`).
+- **Shared Task List** — file-based task tracking with dependency support. Idle teammates automatically pick up unassigned, unblocked tasks.
+- **Mailboxes** — asynchronous file-based messaging for DMs and broadcasts between the leader and teammates.
+- **Governance** — optional workflows like plan-required teammates (`/team spawn <name> plan`) or full-delegate mode (`/team delegate on`).
 
 ---
 
 ## Agents
 
-Specialized roles with baked-in identity, workflow, and review rubrics.
+Unlike legacy setups, this configuration doesn't rely on rigidly defined "Scout" or "Worker" roles. Instead, teammates are dynamically spawned clones of the leader (or fresh sessions) that pick up tasks from the shared backlog. The LLM acts autonomously to break down work and delegate.
 
-| Agent | Model | Purpose |
-|-------|-------|---------|
-| **planner** | Opus 4.6 | Interactive brainstorming — clarify, explore, validate design, write plan, create todos |
-| **scout** | Sonnet 4.6 | Fast codebase reconnaissance — gathers context without making changes |
-| **worker** | Opus 4.6 | Implements tasks from todos, commits with polished messages |
-| **reviewer** | Codex 5.3 | Reviews code for quality, security, correctness (review rubric baked in) |
-| **researcher** | Opus 4.6 | Deep research using parallel.ai tools + Claude Code for code analysis |
-| **visual-tester** | Opus 4.6 | Visual QA — navigates web UIs via Chrome CDP, spots issues, produces reports |
-| **auditor** | Codex 5.3 | Deep codebase audit — security, architecture, dependencies, operational risk |
-| **autoresearch** | GPT-5.4 | Autonomous experiment loop — runs, measures, and optimizes iteratively |
+*(Note: Custom default model policies or hooks can be configured via standard `pi-agent-teams` policies.)*
 
 ## Skills
 
@@ -72,7 +63,6 @@ Loaded on-demand when the context matches.
 | **learn-codebase** | Onboarding to a new project, checking conventions |
 | **session-reader** | Reading and analyzing pi session JSONL files |
 | **skill-creator** | Scaffolding new agent skills |
-| **cmux** | Managing terminal sessions via cmux |
 | **presentation-creator** | Creating data-driven presentation slides |
 | **add-mcp-server** | Adding MCP server configurations |
 
@@ -82,8 +72,6 @@ Loaded on-demand when the context matches.
 |-----------|------------------|
 | **answer/** | `/answer` command + `Ctrl+.` — extracts questions into interactive Q&A UI |
 | **bg-sessions/** | Background session management — keep sessions running while switching |
-| **claude-tool/** | `claude` tool — invoke Claude Code for autonomous tasks |
-| **cmux/** | cmux integration — notifications, sidebar, workspace tools |
 | **cost/** | `/cost` command — API cost summary |
 | **execute-command/** | `execute_command` tool — lets the agent self-invoke slash commands |
 | **pi-mono/** | Dev tooling — diff viewer, file browser, prompt URL widget, redraws, TPS counter |
@@ -95,12 +83,13 @@ Loaded on-demand when the context matches.
 
 | Command | Description |
 |---------|-------------|
-| `/plan <description>` | Start a planning session — spawns planner subagent, then orchestrates execution |
-| `/subagent <agent> <task>` | Spawn a subagent (e.g., `/subagent scout analyze the auth module`) |
-| `/iterate [task]` | Fork session into interactive subagent for quick fixes |
-| `agent_group(...)` | Launch a batch of subagents and collect one grouped result |
-| `active_subagents(...)` | Inspect running subagents from the main session |
-| `message_subagent(...)` | Send a nudge/follow-up into a running subagent |
+| `/swarm [task]` | Spawn a team and orchestrate work on a task |
+| `/team spawn <name>` | Start a teammate (supports `branch`, `worktree`, `plan` modes) |
+| `/tw` or `/team panel` | Open the interactive widget panel to monitor teammates |
+| `/team task add <text>` | Create a task (prefix with `name:` to assign) |
+| `/team dm <name> <msg>` | Send a mailbox message to a teammate |
+| `/team shutdown` | Gracefully shut down all teammates |
+| `/team done` | End a team run, stop teammates, and hide the widget |
 | `/switch` | Switch sessions while optionally keeping current one running in background |
 | `/bg [list\|kill\|attach\|logs\|clear]` | Manage background sessions |
 | `/answer` | Extract questions into interactive Q&A |
@@ -114,7 +103,7 @@ Installed via `pi install`, managed in `settings.json`.
 
 | Package | Description |
 |---------|-------------|
-| [pi-interactive-subagents](https://github.com/HazAT/pi-interactive-subagents) | Subagent tools + `/plan`, `/subagent`, `/iterate` commands |
+| [pi-agent-teams](https://github.com/tmustier/pi-agent-teams) | Team orchestration, shared task list, mailboxes, and `/swarm`, `/team` commands |
 | [pi-parallel](https://github.com/HazAT/pi-parallel) | Parallel web search, extract, research, and enrich tools |
 | [pi-smart-sessions](https://github.com/HazAT/pi-smart-sessions) | AI-generated session names |
 | [pi-autoresearch](https://github.com/HazAT/pi-autoresearch) | Autonomous experiment loop with dashboard |
@@ -126,7 +115,7 @@ Installed via `pi install`, managed in `settings.json`.
 
 ## Credits
 
-Extensions from [mitsuhiko/agent-stuff](https://github.com/mitsuhiko/agent-stuff): `answer`, `todos`
+Extensions from [mitsuhiko/agent-stuff](https://github.com/mitsuhiko/agent-stuff): `answer`, `todos`, `uv`
 
 Skills from [mitsuhiko/agent-stuff](https://github.com/mitsuhiko/agent-stuff): `commit`, `github`
 

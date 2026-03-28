@@ -100,10 +100,7 @@ export default function (pi: ExtensionAPI) {
       const byModel: Record<string, number> = {};
       const byProject: Record<string, number> = {};
 
-      const processFile = (
-        filePath: string,
-        isSubagent: boolean
-      ) => {
+      const processFile = (filePath: string, isSubagent: boolean) => {
         const basename = path.basename(filePath);
         const datePart = basename.slice(0, 10);
         if (datePart < cutoff) return;
@@ -144,8 +141,12 @@ export default function (pi: ExtensionAPI) {
 
       // Build output
       const lines: string[] = [];
-      lines.push(`💰 Total: ${formatCost(total)}  (${totalSessions} sessions, last ${days} days)`);
-      lines.push(`   Main: ${formatCost(mainCost)} (${mainSessions})  ·  Subagents: ${formatCost(subagentCost)} (${subagentSessions})`);
+      lines.push(
+        `💰 Total: ${formatCost(total)}  (${totalSessions} sessions, last ${days} days)`,
+      );
+      lines.push(
+        `   Main: ${formatCost(mainCost)} (${mainSessions})  ·  Subagents: ${formatCost(subagentCost)} (${subagentSessions})`,
+      );
       lines.push("");
 
       // By date
@@ -153,7 +154,9 @@ export default function (pi: ExtensionAPI) {
       if (dates.length > 0) {
         lines.push("📅 By date:");
         for (const d of dates) {
-          const bar = "█".repeat(Math.max(1, Math.round((byDate[d] / total) * 30)));
+          const bar = "█".repeat(
+            Math.max(1, Math.round((byDate[d] / total) * 30)),
+          );
           lines.push(`   ${d}  ${formatCost(byDate[d]).padStart(8)}  ${bar}`);
         }
         lines.push("");

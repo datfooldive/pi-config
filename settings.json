@@ -1,16 +1,6 @@
 {
-  "lastChangelogVersion": "0.63.1",
-  "defaultProvider": "openai-codex",
-  "defaultModel": "gpt-5.4",
-  "defaultThinkingLevel": "high",
   "packages": [
     "git:github.com/nicobailon/pi-mcp-adapter",
-    {
-      "source": "git:github.com/HazAT/pi-smart-sessions",
-      "extensions": [
-        "+extensions/smart-sessions.ts"
-      ]
-    },
     {
       "source": "git:github.com/HazAT/pi-parallel",
       "extensions": [
@@ -24,39 +14,32 @@
     "npm:@arpagon/pi-web-providers",
     "npm:@hyperprior/pi-ask",
     "npm:@hyperprior/pi-ssh",
-    "npm:pi-ghostty",
-    {
-      "source": "npm:@ifi/oh-pi-extensions",
-      "extensions": [
-        "-extensions/bg-process.ts"
-      ]
-    },
-    {
-      "source": "npm:oh-pi",
-      "extensions": [
-        "-extensions/safe-guard.ts",
-        "-pi-package/extensions/bg-process.ts"
-      ],
-      "prompts": [
-        "-pi-package/prompts/review.md"
-      ]
-    },
-    "npm:pi-cmux",
-    "git:github.com/picassio/pi-ghostty-web",
-    "../../hub/zonko/pi-gigaplan",
-    "../../hub/pi-interactive-subagents",
-    "npm:pi-teams",
     "npm:@codexstar/pi-listen",
     "git:github.com/umgbhalla/pi-openai-compaction",
     "npm:pi-tool-display",
     "npm:pi-context",
-    "npm:pi-updater"
+    "npm:pi-updater",
+    "npm:@tmustier/pi-agent-teams",
+    {
+      "source": "npm:@ifi/oh-pi-extensions",
+      "extensions": [
+        "-extensions/bg-process.ts",
+        "-extensions/custom-footer.ts",
+        "-extensions/usage-tracker.ts"
+      ]
+    },
+    "npm:@ifi/oh-pi-ant-colony",
+    "npm:@ifi/pi-plan",
+    "npm:@ifi/pi-spec",
+    "npm:@ifi/oh-pi-prompts",
+    "npm:@ifi/oh-pi-skills",
+    "npm:pi-rtk-optimizer",
+    "git:github.com/HazAT/pi-smart-sessions"
   ],
   "hideThinkingBlock": false,
   "extensions": [
     "extensions/restart/index.ts",
     "extensions/answer/index.ts",
-    "extensions/claude-tool/index.ts",
     "extensions/cost/index.ts",
     "extensions/execute-command/index.ts",
     "extensions/todos/index.ts",
@@ -74,7 +57,6 @@
   "steeringMode": "all",
   "followUpMode": "all",
   "treeFilterMode": "default",
-  "theme": "oh-p-dark",
   "voice": {
     "version": 2,
     "enabled": true,

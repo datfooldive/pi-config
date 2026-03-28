@@ -4,6 +4,7 @@ auth.json
 # Local state - don't sync
 .pi/
 sessions/
+teams/
 bin/
 
 

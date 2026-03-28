@@ -6,7 +6,7 @@ EXPECTED_DIR="$HOME/.pi/agent"
 
 # Verify we're in the right place
 if [ "$SCRIPT_DIR" != "$EXPECTED_DIR" ]; then
-  echo "⚠️  This repo should be cloned to ~/.pi/agent/"
+  echo "Warning: This repo should be cloned to ~/.pi/agent/"
   echo "   Current location: $SCRIPT_DIR"
   echo "   Expected: $EXPECTED_DIR"
   echo ""
@@ -22,9 +22,9 @@ if [ ! -f "$EXPECTED_DIR/settings.json" ]; then
   echo "Creating settings.json..."
   cat > "$EXPECTED_DIR/settings.json" << 'EOF'
 {
-  "defaultProvider": "anthropic",
-  "defaultModel": "claude-opus-4-6",
-  "defaultThinkingLevel": "medium",
+  "defaultProvider": "openai-codex",
+  "defaultModel": "gpt-5.4",
+  "defaultThinkingLevel": "high",
   "packages": [
     "git:github.com/nicobailon/pi-mcp-adapter",
     {
@@ -41,14 +41,11 @@ if [ ! -f "$EXPECTED_DIR/settings.json" ]; then
     },
     "git:github.com/pasky/chrome-cdp-skill",
     "git:github.com/HazAT/glimpse",
-    "git:github.com/umgbhalla/pi-interactive-subagents",
+    "npm:@tmustier/pi-agent-teams",
     "git:github.com/HazAT/pi-autoresearch"
   ],
   "hideThinkingBlock": false,
-  "extensions": [
-    "+extensions/cmux/index.ts",
-    "+extensions/claude-tool/index.ts"
-  ]
+  "extensions": []
 }
 EOF
 else
@@ -63,18 +60,11 @@ pi install git:github.com/HazAT/pi-smart-sessions 2>/dev/null || echo "  pi-smar
 pi install git:github.com/HazAT/pi-parallel 2>/dev/null || echo "  pi-parallel already installed"
 pi install git:github.com/pasky/chrome-cdp-skill 2>/dev/null || echo "  chrome-cdp-skill already installed"
 pi install git:github.com/HazAT/glimpse 2>/dev/null || echo "  glimpse already installed"
-pi install git:github.com/umgbhalla/pi-interactive-subagents 2>/dev/null || echo "  pi-interactive-subagents already installed"
+pi install npm:@tmustier/pi-agent-teams 2>/dev/null || echo "  pi-agent-teams already installed"
 pi install git:github.com/HazAT/pi-autoresearch 2>/dev/null || echo "  pi-autoresearch already installed"
 echo ""
 
-# Install claude-tool extension dependencies
-if [ -f "$EXPECTED_DIR/extensions/claude-tool/package.json" ]; then
-  echo "Installing claude-tool dependencies..."
-  cd "$EXPECTED_DIR/extensions/claude-tool" && npm install --silent
-  cd "$EXPECTED_DIR"
-  echo ""
-fi
 
-echo "✅ Setup complete!"
+echo "Setup complete!"
 echo ""
 echo "Restart pi to pick up all changes."
